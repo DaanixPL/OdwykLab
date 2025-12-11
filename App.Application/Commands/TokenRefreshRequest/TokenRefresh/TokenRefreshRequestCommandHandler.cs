@@ -2,7 +2,7 @@
 using App.Application.Responses;
 using App.Application.Validators.Exceptions;
 using App.Domain.Abstractions;
-using App.Domain.Entities;
+using OdwykLab.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
 

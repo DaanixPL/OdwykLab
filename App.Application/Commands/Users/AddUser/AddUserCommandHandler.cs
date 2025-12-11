@@ -1,5 +1,5 @@
 ﻿using App.Domain.Abstractions;
-using App.Domain.Entities;
+using OdwykLab.Domain.Entities;
 using AutoMapper;
 using MediatR;
 using Microsoft.Extensions.Logging;

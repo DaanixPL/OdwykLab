@@ -1,4 +1,4 @@
-using App.Domain.Entities;
+using OdwykLab.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

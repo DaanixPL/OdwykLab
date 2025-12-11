@@ -1,0 +1,90 @@
+﻿@page "/login"
+@using OdwykLab.Frontend.Components.Models
+@inject HttpClient Http
+@inject Microsoft.JSInterop.IJSRuntime JSRuntime
+@inject Microsoft.AspNetCore.Components.NavigationManager NavManager
+@rendermode InteractiveServer
+
+<div class="wrapper">
+    <MudCard Class="card" Style="max-width:400px;width:100%">
+        <MudCardContent>
+            <MudTextField Label="Email or Username"
+                          Variant="Variant.Outlined"
+                          @bind-Value="email"
+                          FullWidth="true"
+                          Margin="Margin.Dense" />
+
+            <MudTextField Label="Password"
+                          Variant="Variant.Outlined"
+                          @bind-Value="password"
+                          InputType="InputType.Password"
+                          FullWidth="true"
+                          Margin="Margin.Dense" />
+
+            <MudStack>
+                <MudLink Href="#" Typo="Typo.subtitle1" Color="Color.Info" Underline="Underline.None">Forgot Password?</MudLink>
+
+                <MudFlexBreak />
+
+                <MudItem xs="12">
+                    <MudButton Variant="Variant.Filled" FullWidth="true" Color="Color.Info" OnClick="LoginUser">Login</MudButton>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudButton Href="/register" Variant="Variant.Filled" FullWidth="true" Color="Color.Default">Register</MudButton>
+                </MudItem>
+            </MudStack>
+        </MudCardContent>
+    </MudCard>
+</div>
+
+@code {
+    [Inject]
+    public required ISnackbar Snackbar { get; set; }
+    string? email;
+    string? password;
+
+    private async Task LoginUser()
+    {
+        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+        {
+            Snackbar.Add("Oooops, you have empty fields", Severity.Error);
+            return;
+        }
+        var user = new
+        {
+            emailOrUsername = email,
+            password = password,
+        };
+        var request = new HttpRequestMessage(HttpMethod.Post, $"/api/Users/login")
+        {
+            Content = new StringContent(
+            System.Text.Json.JsonSerializer.Serialize(user),
+            System.Text.Encoding.UTF8,
+            "application/json")
+        };
+
+        var response = await Http.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var jsonContent = await response.Content.ReadAsStringAsync();
+
+            var loginResult = System.Text.Json.JsonSerializer.Deserialize<LoginResponse>(jsonContent,
+                          new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (loginResult != null && !string.IsNullOrEmpty(loginResult.AccessToken) && !string.IsNullOrEmpty(loginResult.RefreshToken) && !string.IsNullOrEmpty(loginResult.Username))
+            {
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", loginResult.AccessToken);
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "refreshToken", loginResult.RefreshToken);
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "username", loginResult.Username);
+
+                StateHasChanged();
+                NavManager.NavigateTo("/dashboard");
+            }
+        }
+        else
+        {
+            Console.WriteLine("BLAD LOGOWANANIA: " + response);
+        }
+    }
+}

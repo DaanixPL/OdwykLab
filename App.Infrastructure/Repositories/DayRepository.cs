@@ -1,7 +1,7 @@
 ﻿using App.Domain.Abstractions;
-using App.Domain.Entities;
 using App.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
+using OdwykLab.Domain.Entities;
 
 namespace App.Infrastructure.Repositories
 {

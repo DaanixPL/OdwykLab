@@ -2,7 +2,7 @@
 using App.Application.Responses;
 using App.Application.Validators.Exceptions;
 using App.Domain.Abstractions;
-using App.Domain.Entities;
+using OdwykLab.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -14,7 +14,7 @@ namespace App.Application.Commands.Users.LoginUser
         private readonly IUnitOfWork _unitOfWork;
         private readonly ITokenGeneratorRepository _tokenGenerator;
         private readonly ILogger<LoginUserCommandHandler> _logger;
-        private readonly IHttpContextAccessor _httpContextAccessor = new HttpContextAccessor();
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public LoginUserCommandHandler(IUnitOfWork unitOfWork, ITokenGeneratorRepository tokenGenerator, ILogger<LoginUserCommandHandler> logger, IHttpContextAccessor httpContextAccessor)
         {

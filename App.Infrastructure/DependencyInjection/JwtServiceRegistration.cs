@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Auth0.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using System.Security.Claims;
 
 namespace App.Infrastructure.DependencyInjection;
 
@@ -12,10 +13,33 @@ public static class JwtServiceRegistration
 {
     public static IServiceCollection AddJwtServices(this IServiceCollection services, IConfiguration configuration)
     {
+
+        services.AddAuth0WebAppAuthentication(options =>
+        {
+            options.Domain = "Auth0:Domain";
+            options.ClientId = "Auth0:ClientId";
+        });
+
         services.AddAuthentication(options =>
         {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultScheme = "SmartScheme";
+            options.DefaultAuthenticateScheme = "SmartScheme";
+            options.DefaultChallengeScheme = "SmartScheme";
+        })
+        .AddPolicyScheme("SmartScheme", "Bearer or Cookie", options =>
+        {
+            options.ForwardDefaultSelector = context =>
+            {
+                var logger = context.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger("AuthScheme");
+                var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+                if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                {
+                    logger.LogInformation("Using JWT Bearer Authentication with auth Header: {authHeader}", authHeader);
+                    return JwtBearerDefaults.AuthenticationScheme;
+                }
+                logger.LogInformation("Using Cookie Authentication with auth Header: {authHeader}", authHeader);
+                return CookieAuthenticationDefaults.AuthenticationScheme;
+            };
         })
         .AddJwtBearer(options =>
         {

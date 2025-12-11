@@ -1,0 +1,31 @@
+﻿@rendermode InteractiveServer
+
+<MudThemeProvider Theme="_currentTheme" @bind-IsDarkMode="_isDarkMode" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<Router AppAssembly="typeof(Program).Assembly" NotFoundPage="typeof(Pages.NotFound)">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>
+
+@code {
+    private bool _isDarkMode = true;
+
+    private MudTheme _currentTheme = new MudTheme()
+    {
+        PaletteDark = new PaletteDark()
+        {
+            Primary = "#e1e8ed",
+            Secondary = "#030303",
+            Background = "#030303",
+            AppbarBackground = "#1e1e1e",
+            DrawerBackground = "#1e1e1e",
+            TextPrimary = "#ffffff",
+            TextSecondary = "#b0b0b0"
+        }
+    };
+}

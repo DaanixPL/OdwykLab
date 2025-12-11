@@ -1,7 +1,7 @@
 ﻿using App.Application.Commands.Users.AddUser;
 using App.Application.Commands.Users.UpdateUser;
 using App.Domain.DTOs;
-using App.Domain.Entities;
+using OdwykLab.Domain.Entities;
 using AutoMapper;
 
 namespace App.Application.Mappings

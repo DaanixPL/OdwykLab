@@ -1,7 +1,6 @@
 ﻿using App.Application.Commands.Days.AddDay;
 using App.Application.Commands.Days.DeleteDay;
 using App.Application.Queries.Days.GetDay.ByUserId;
-using App.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,27 +13,29 @@ namespace App.Api.Controllers
     {
         private readonly IMediator _mediator = mediator;
 
-        [HttpGet("{userId}")] 
-        public async Task<IActionResult> GetDaysByUserId([FromQuery] int userId)
+        [Authorize]
+        [HttpGet("me")] 
+        public async Task<IActionResult> GetDayByUserId()
         {
-            var query = new GetDayByUserIdQuery(userId);
-            var result = await _mediator.Send(query);
+            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var result = await _mediator.Send(new GetDayByUserIdQuery(userId));
             return Ok(result);
         }
 
+        [Authorize]
         [HttpPost] 
-        public async Task<IActionResult> CreateDay([FromBody] AddDayCommand command)
+        public async Task<IActionResult> AddDay()
         {
-            var result = await _mediator.Send(command);
+            var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var result = await _mediator.Send(new AddDayCommand(userId));
             return Ok(result);
         }
         [Authorize]
-        [HttpDelete("{date}")]
-        public async Task<IActionResult> DeleteDay(DateOnly date)
+        [HttpDelete]
+        public async Task<IActionResult> DeleteDay([FromBody] DateOnly date)
         {
             var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var command = new DeleteDayCommand(date, userId);
-            var result = await _mediator.Send(command);
+            var result = await _mediator.Send(new DeleteDayCommand(date, userId));
             return NoContent();
         }
     }

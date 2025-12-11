@@ -1,0 +1,89 @@
+﻿@page "/register"
+@inject HttpClient Http
+@inject Microsoft.AspNetCore.Components.NavigationManager NavManager
+@rendermode InteractiveServer
+
+<MudSnackbarProvider />
+
+<div class="wrapper">
+    <MudCard Class="card"19k Style="max-width:400px;width:100%">
+        <MudCardContent>
+            <MudTextField Label="Email"
+                      Variant="Variant.Outlined"
+                      FullWidth="true"
+                      @bind-Value="email">
+            </MudTextField>
+
+            <MudTextField Label="Username"
+                      Variant="Variant.Outlined"
+                      FullWidth="true"
+                       @bind-Value="username">
+            </MudTextField>
+
+            <MudTextField Label="Password"
+                      Variant="Variant.Outlined"
+                      FullWidth="true"
+                      @bind-Value="password">
+            </MudTextField>
+            <MudStack>
+                <MudLink Href="#" Typo="Typo.subtitle1" Color="Color.Info" Underline="Underline.None">Forgot Password?</MudLink>
+
+                <MudFlexBreak />
+
+                <MudItem xs="12">
+                    <MudButton Variant="Variant.Filled"
+                               FullWidth="true"
+                               Color="Color.Info"
+                               OnClick="RegisterUser">
+                        Register
+                    </MudButton>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudButton Href="/login" Variant="Variant.Filled" FullWidth="true" Color="Color.Default">Login</MudButton>
+                </MudItem>
+            </MudStack>
+        </MudCardContent>
+    </MudCard>
+</div>
+
+@code {
+    [Inject]
+    public required ISnackbar Snackbar { get; set; }
+
+    string? email;
+    string? password;
+    string? username;
+
+    private async Task RegisterUser()
+    {
+        if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(username))
+        {
+            Snackbar.Add("Oooops, you have empty fields", Severity.Error);
+            return;
+        }
+        var user = new
+        {
+            username = username,
+            email = email,
+            password = password,
+        };
+        var request = new HttpRequestMessage(HttpMethod.Post, $"/api/Users")
+        {
+            Content = new StringContent(
+            System.Text.Json.JsonSerializer.Serialize(user),
+            System.Text.Encoding.UTF8,
+            "application/json")
+        };
+
+        var response = await Http.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            NavManager.NavigateTo("/login");
+        }
+        else
+        {
+            Console.WriteLine("BLAD register" + response);
+        }
+    }
+}

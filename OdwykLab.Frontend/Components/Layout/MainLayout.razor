@@ -1,0 +1,60 @@
+﻿@inherits LayoutComponentBase
+@inject IJSRuntime JSRuntime
+@inject NavigationManager NavManager
+
+<MudContainer>
+    <MudAppBar Color="Color.Secondary">
+        <MudLink Href="/#hero" Class="image">
+            <MudImage Src="images/OdwykLab.svg" Width="200" Height="80" ObjectFit="ObjectFit.Cover"/>
+        </MudLink>
+        <MudSpacer/>
+        <MudButton Href="#about">About</MudButton>
+        <MudButton Href="#contact">Contact</MudButton>
+        @if(isLogged)
+        {
+            <MudMenu>
+                <ActivatorContent>
+                    <MudAvatar>@firstLetterNickname</MudAvatar>
+                </ActivatorContent>
+                <ChildContent>
+                    <MudMenuItem Href="/dashboard">Dashboard</MudMenuItem>
+                    <MudMenuItem>Logout | soon</MudMenuItem>
+                </ChildContent>
+            </MudMenu>
+        }
+        else
+        {
+            <MudButton Href="/login" Variant="Variant.Filled" Color="Color.Info">Login</MudButton>
+        }
+    </MudAppBar>
+</MudContainer>
+
+@Body
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@code {
+    private string firstLetterNickname = string.Empty;
+    bool isLogged;
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        var username = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "username");
+        if (username != null)
+        {
+            firstLetterNickname = char.ToUpper(username[0]).ToString();
+            isLogged = true;
+            StateHasChanged();
+        }
+        else
+        {
+            isLogged = false;
+        }
+        await base.OnInitializedAsync();
+    }
+}

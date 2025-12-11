@@ -10,8 +10,10 @@ namespace App.Infrastructure.DependencyInjection
         public static IServiceCollection AddDatabaseServices(this IServiceCollection services, IConfiguration configuration)
         {
             services.AddDbContext<AppDbContext>(options =>
-            options.UseMySql(configuration.GetConnectionString("DefaultConnection"),
+            options.UseMySql(configuration.GetConnectionString("DefaultConnectionString"),
                 new MySqlServerVersion(new Version(8, 0, 29))));
+
+            Console.WriteLine(configuration.GetConnectionString("DefaultConnectionString"));
 
             return services;
         }

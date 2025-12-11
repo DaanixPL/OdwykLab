@@ -1,6 +1,6 @@
 ﻿using App.Application.Validators.Exceptions;
 using App.Domain.Abstractions;
-using App.Domain.Entities;
+using OdwykLab.Domain.Entities;
 using MediatR;
 
 namespace App.Application.Commands.Days.DeleteDay
@@ -19,7 +19,7 @@ namespace App.Application.Commands.Days.DeleteDay
 
             if (dayToDelete == null)
             {
-                throw new NotFoundException("Day", command.UserId);
+                throw new NotFoundException("Day with user id ", command.UserId);
             }
 
             await _unitOfWork.Days.DeleteDayAsync(dayToDelete, cancellationToken);

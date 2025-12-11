@@ -1,5 +1,5 @@
 ﻿using App.Domain.Abstractions;
-using App.Domain.Entities;
+using OdwykLab.Domain.Entities;
 using MediatR;
 
 namespace App.Application.Commands.Days.AddDay

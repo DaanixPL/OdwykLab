@@ -1,0 +1,101 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    font-family: Rubik, sans-serif !important;
+    background-color: #030303;
+}
+body {
+    overflow-x: hidden;
+}
+.Rubik-bold {
+    font-family: Rubik, sans-serif;
+    font-weight: 900 !important;
+}
+.full-screen-hero {
+    width: 100%;
+    height: 100vh;
+    max-width: 100%;
+    background-image: url('images/wave.png');
+    background-repeat: no-repeat;
+    background-position: center 80%;
+    background-size: 100% auto;
+    position: relative;
+}
+.full-screen-about {
+    width: 100%;
+    height: 100vh;
+    max-width: 100%;
+    background-size: 100% auto;
+    position: relative;
+}
+.calender-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    padding-top: 5%;
+}
+.center-left {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(calc(-50% - 120%), -50%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.center-right {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    max-width: 20%;
+    transform: translate(calc(-50% + 150%), -80%);
+    display: flex;
+    flex-direction: column;
+}
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+.wrapper {
+    display: flex;
+    justify-content: center;
+    background-image: url('images/grid.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    align-items: center;
+    height: 100vh;
+}
+.card {
+    background-color: rgb(0, 0, 0, 0.1);
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+.contact {
+    width: 100%;
+    height: 15vh;
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* highlight selected day without breaking layout */
+.mud-cal-month-cell.selected-day .mud-cal-month-link {
+  background-color: var(--selected-bg, var(--mud-palette-primary));
+  border-radius: 6px;
+  display: inline-block; /* limit to day content, tweak if you want full-cell fill */
+  padding: 4px 6px;
+  color: var(--mud-palette-primary-contrast, #fff);
+  font-weight: 600;
+  /* use !important only if some stronger rule overrides this */
+  /* background-color: var(--selected-bg, var(--mud-palette-primary)) !important; */
+}

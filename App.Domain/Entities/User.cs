@@ -1,4 +1,4 @@
-﻿namespace App.Domain.Entities
+﻿namespace OdwykLab.Domain.Entities
 {
     public class User
     {

@@ -1,0 +1,249 @@
+﻿@page "/dashboard"
+@using OdwykLab.Frontend.Components.Models
+@rendermode InteractiveServer
+@inject HttpClient Http
+
+<div class="full-screen-hero">
+    <div class="calender-wrapper">
+        <CustomMonthView @ref="_calendarRef" SelectedDays="_selectedDates" />
+    </div>
+
+    <MudGrid>
+        <MudItem xs="12">
+            <MudButton Variant="Variant.Outlined" OnClick="OnClickDid">@((!didItToday) ? "I Did it today" : "I Didnt do it today")</MudButton>
+        </MudItem>
+        <MudItem xs="12">
+            <MudText>Fail: @fails</MudText>
+            <MudText>Win: </MudText>
+        </MudItem>
+    </MudGrid>
+</div>
+
+
+@code
+{
+    [Inject]
+    public required IJSRuntime JSRuntime { get; set; }
+    [Inject]
+    public required NavigationManager NavManager { get; set; }
+
+    private string apiKey = "";
+
+    bool didItToday = false;
+    private CustomMonthView? _calendarRef;
+
+    private List<DateOnly> _selectedDates = new();
+    int wins = 0;
+    int fails = 0;
+
+    private async void OnClickDid()
+    {
+        if (_calendarRef == null)
+        {
+            _calendarRef = new CustomMonthView();
+        }
+
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var day = _selectedDates.FirstOrDefault(d => d.Day == today.Day && d.Month == today.Month && d.Year == today.Year);
+        Console.WriteLine($"day: {day}");
+        foreach (var d in _selectedDates)
+        {
+            Console.WriteLine(d);
+        }
+        if (_selectedDates.Contains(day))
+        {
+            await DeleteDay(today);
+            didItToday = false;
+            _calendarRef.Refresh();
+        }
+        else
+        {
+            await CreateDay(today);
+            didItToday = true;
+            _calendarRef.Refresh();
+        }
+    }
+
+    protected override Task OnInitializedAsync()
+    {
+        return base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        try
+        {
+            apiKey = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Błąd odczytu localStorage: " + ex.Message);
+        }
+
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            string refreshToken = "";
+            try
+            {
+                refreshToken = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "refreshToken");
+            }
+            catch { }
+
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                NavManager.NavigateTo("/login");
+                return;
+            }
+        }
+
+        if (!string.IsNullOrEmpty(apiKey))
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "/api/Days/me");
+            request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+
+            var response = await Http.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+
+                _selectedDates = System.Text.Json.JsonSerializer.Deserialize<List<DateOnly>>(json, new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }) ?? new List<DateOnly>();
+
+                if (_selectedDates.Contains(DateOnly.FromDateTime(DateTime.Now)))
+                {
+                    didItToday = true;
+                }
+
+                fails = _selectedDates.Count();
+                StateHasChanged();
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                await RefreshTokens(JSRuntime, Http);
+                NavManager.NavigateTo(NavManager.Uri, forceLoad: true);
+            }
+            else
+            {
+
+                Console.WriteLine("Błąd pobierania dni z API: " + response);
+            }
+        }
+        else
+        {
+            NavManager.NavigateTo("/login");
+        }
+    }
+
+    private async Task CreateDay(DateOnly today)
+    {
+        _selectedDates.Add(today);
+        var request = new HttpRequestMessage(HttpMethod.Post, $"/api/Days");
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+        var response = await Http.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            StateHasChanged();
+        }
+        else
+        {
+            _selectedDates.Remove(today);
+            var respContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"BLAD Status: {response.StatusCode}, Content: '{respContent}'");
+        }
+    }
+    private async Task DeleteDay(DateOnly today)
+    {
+        _selectedDates.Remove(today);
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/Days")
+        {
+            Content = new StringContent(
+                System.Text.Json.JsonSerializer.Serialize(today),
+                System.Text.Encoding.UTF8,
+                "application/json")
+        };
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+        var response = await Http.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            StateHasChanged();
+        }
+        else
+        {
+            _selectedDates.Add(today);
+            var respContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"BLAD Status: {response.StatusCode}, Content: '{respContent}'");
+
+        }
+    }
+    public async static Task<string[]> RefreshTokens(IJSRuntime JSRuntime, HttpClient Http)
+    {
+        if (JSRuntime is null) throw new ArgumentNullException(nameof(JSRuntime));
+        if (Http is null) throw new ArgumentNullException(nameof(Http));
+
+        string? currentAuth = null;
+        string? currentRefresh = null;
+
+        try
+        {
+            currentAuth = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "authToken");
+            currentRefresh = await JSRuntime.InvokeAsync<string>("localStorage.getItem", "refreshToken");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"RefreshTokensAsync: błąd odczytu localStorage: {ex}");
+            return Array.Empty<string>();
+        }
+
+        if (string.IsNullOrEmpty(currentRefresh))
+        {
+            return Array.Empty<string>();
+        }
+
+        var tokens = new
+        {
+           AccessToken = currentAuth,
+           RefreshToken = currentRefresh,
+        };
+
+        var request = new HttpRequestMessage(HttpMethod.Post, $"/api/Auth/refresh")
+        {
+            Content = new StringContent(
+             System.Text.Json.JsonSerializer.Serialize(tokens),
+             System.Text.Encoding.UTF8,
+             "application/json")
+        };
+        var response = await Http.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var jsonContent = await response.Content.ReadAsStringAsync();
+
+            var loginResult = System.Text.Json.JsonSerializer.Deserialize<AuthResponse>(jsonContent,
+                         new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (loginResult != null || !string.IsNullOrEmpty(loginResult.AccessToken) || !string.IsNullOrEmpty(loginResult.RefreshToken))
+            {
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "authToken", loginResult.AccessToken);
+                await JSRuntime.InvokeVoidAsync("localStorage.setItem", "refreshToken", loginResult.RefreshToken);
+
+                return new string[] { loginResult.AccessToken, loginResult.RefreshToken };
+            }
+            return Array.Empty<string>();
+
+        }
+        else
+        {
+            var respContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"BLAD Status: {response.StatusCode}, Content: '{respContent}'");
+            return Array.Empty<string>();
+        }
+    }
+}

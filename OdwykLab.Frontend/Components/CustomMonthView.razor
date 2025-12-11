@@ -1,0 +1,100 @@
+﻿@using MudBlazor
+
+<MudGrid>
+    <MudItem xs="12">
+        <table class="calendar-table">
+            <thead>
+                <tr>
+                    @foreach (var day in DaysOfWeek)
+                    {
+                        <th>@day</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var week in CalendarRows)
+                {
+                    <tr>
+                        @foreach (var day in week)
+                        {
+                            <td style="@GetDayStyle(day)">
+                                @if (day.Month == CurrentDate.Month)
+                                {
+                                    <span>@day.Day</span>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </MudItem>
+    <MudItem xs="12">
+        <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="calendar-nav">
+            <MudText Typo="Typo.h6">@CurrentDate.ToString("MMMM yyyy")</MudText>
+            <MudStack Row="true" AlignItems="AlignItems.Center" Justify="Justify.Center" Spacing="2">
+                <MudIconButton Icon="@Icons.Material.Filled.KeyboardDoubleArrowLeft" Color="Color.Primary" OnClick="PrevYear" />
+                <MudIconButton Icon="@Icons.Material.Filled.ChevronLeft" Color="Color.Primary" OnClick="PrevMonth" />
+                <MudIconButton Icon="@Icons.Material.Filled.ChevronRight" Color="Color.Primary" OnClick="NextMonth" />
+                <MudIconButton Icon="@Icons.Material.Filled.KeyboardDoubleArrowRight" Color="Color.Primary" OnClick="NextYear" />
+            </MudStack>
+        </MudStack>
+    </MudItem>
+</MudGrid>
+
+
+
+<style>
+    .calendar-table { width: 100%; border-collapse: collapse; }
+    .calendar-table th, .calendar-table td { padding: 6px; text-align: center; }
+    .calendar-table td span { display: inline-block; width: 32px; height: 32px; line-height: 32px; border-radius: 6px; }
+    .calendar-nav { margin-top: 16px; }
+</style>
+
+@code {
+    [Parameter]
+    public List<DateOnly> SelectedDays { get; set; } = new();
+
+    private DateTime CurrentDate = DateTime.Today;
+
+    private string[] DaysOfWeek = new[] { "Pn", "Wt", "Śr", "Cz", "Pt", "Sb", "Nd" };
+
+    private List<List<DateTime>> CalendarRows => GenerateCalendarRows();
+
+    private void PrevMonth() => CurrentDate = CurrentDate.AddMonths(-1);
+    private void NextMonth() => CurrentDate = CurrentDate.AddMonths(1);
+    private void PrevYear() => CurrentDate = CurrentDate.AddYears(-1);
+    private void NextYear() => CurrentDate = CurrentDate.AddYears(1);
+
+    private List<List<DateTime>> GenerateCalendarRows()
+    {
+        var firstDayOfMonth = new DateTime(CurrentDate.Year, CurrentDate.Month, 1);
+        int diff = ((int)firstDayOfMonth.DayOfWeek + 6) % 7;
+        var startDate = firstDayOfMonth.AddDays(-diff);
+
+        var rows = new List<List<DateTime>>();
+        for (int week = 0; week < 6; week++)
+        {
+            var days = new List<DateTime>();
+            for (int day = 0; day < 7; day++)
+            {
+                days.Add(startDate.AddDays(week * 7 + day));
+            }
+            rows.Add(days);
+        }
+        return rows;
+    }
+    public void Refresh()
+    {
+        StateHasChanged();
+    }
+    private string GetDayStyle(DateTime day)
+    {
+        var dateOnly = DateOnly.FromDateTime(day);
+        if (SelectedDays.Contains(dateOnly) && day.Month == CurrentDate.Month)
+        {
+            return $"background:#FF0000;color:#fff;border-radius:6px;";
+        }
+        return "";
+    }
+}

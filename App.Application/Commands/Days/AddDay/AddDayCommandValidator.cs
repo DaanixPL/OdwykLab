@@ -16,7 +16,7 @@ namespace App.Application.Commands.Days.AddDay
                     var day = await unitOfWork.Days.GetDaysByUserIdAsync(userId, cancellation);
                     return !day.Any(day => day.Date == DateOnly.FromDateTime(DateTime.UtcNow));
                 },
-                nameof(AddDayCommand.UserId)
+                "Day"
                 );
         }
     }

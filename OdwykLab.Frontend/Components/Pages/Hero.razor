@@ -1,0 +1,23 @@
+﻿@page "/"
+@rendermode InteractiveServer
+
+<div class="full-screen-hero" id="hero">
+    <div class="center-left">
+        <MudText Color="Color.Primary" Typo="Typo.h1" Align="Align.Center" Class="Rubik-bold">Welcome</MudText>
+        <div class="center">
+            <MudButton Color="Color.Info" Variant="Variant.Filled" Href="/login">Start</MudButton>
+            <MudButton Color="Color.Primary" Variant="Variant.Outlined" Href="#about">About us</MudButton>
+        </div>
+    </div>
+    <div class="center-right">
+        <MudImage Src="images/lab.svg" Width="200" Height="200" Class="center"/>
+        <MudText Color="Color.Primary" Typo="Typo.h2" Align="Align.Center">OdwykLab</MudText>
+        <MudText Color="Color.Primary" Typo="Typo.body2" Align="Align.Center">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.</MudText>
+    </div>
+</div>
+<div class="full-screen-about" id="about">
+    <About />
+</div>
+<div class="contact" id="contact">
+    <Contact />
+</div>
