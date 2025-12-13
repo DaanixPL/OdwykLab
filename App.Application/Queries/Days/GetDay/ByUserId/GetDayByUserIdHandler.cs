@@ -5,14 +5,14 @@ using MediatR;
 
 namespace App.Application.Queries.Days.GetDay.ByUserId
 {
-    public class GetDayByUserIdHandler : IRequestHandler<GetDayByUserIdQuery, List<DateOnly>>
+    public class GetDayByUserIdHandler : IRequestHandler<GetDayByUserIdQuery, List<Day>>
     {
         private readonly IUnitOfWork _unitOfWork;
         public GetDayByUserIdHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
-        public async Task<List<DateOnly>> Handle(GetDayByUserIdQuery query, CancellationToken cancellationToken)
+        public async Task<List<Day>> Handle(GetDayByUserIdQuery query, CancellationToken cancellationToken)
         {
             var days = await _unitOfWork.Days.GetDaysByUserIdAsync(query.userId, cancellationToken);
 
@@ -21,7 +21,7 @@ namespace App.Application.Queries.Days.GetDay.ByUserId
                 throw new NotFoundException("Days", query.userId);
             }
 
-            return days.Select(d => d.Date).ToList();;
+            return days;
         }
     }
 }

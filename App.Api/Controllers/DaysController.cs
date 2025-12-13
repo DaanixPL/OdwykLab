@@ -24,10 +24,10 @@ namespace App.Api.Controllers
 
         [Authorize]
         [HttpPost] 
-        public async Task<IActionResult> AddDay()
+        public async Task<IActionResult> AddDay([FromBody] bool isGood)
         {
             var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var result = await _mediator.Send(new AddDayCommand(userId));
+            var result = await _mediator.Send(new AddDayCommand(userId, isGood));
             return Ok(result);
         }
         [Authorize]

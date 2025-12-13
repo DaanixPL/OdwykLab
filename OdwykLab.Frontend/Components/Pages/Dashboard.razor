@@ -1,11 +1,12 @@
 ﻿@page "/dashboard"
+@using OdwykLab.Domain.Entities
 @using OdwykLab.Frontend.Components.Models
 @rendermode InteractiveServer
 @inject HttpClient Http
 
 <div class="full-screen-hero">
     <div class="calender-wrapper">
-        <CustomMonthView @ref="_calendarRef" SelectedDays="_selectedDates" />
+        <CustomMonthView @ref="_calendarRef" SelectedDays=" _selectedDates" />
     </div>
 
     <MudGrid>
@@ -32,7 +33,7 @@
     bool didItToday = false;
     private CustomMonthView? _calendarRef;
 
-    private List<DateOnly> _selectedDates = new();
+    private List<Day> _selectedDates = new();
     int wins = 0;
     int fails = 0;
 
@@ -44,21 +45,23 @@
         }
 
         var today = DateOnly.FromDateTime(DateTime.Today);
-        var day = _selectedDates.FirstOrDefault(d => d.Day == today.Day && d.Month == today.Month && d.Year == today.Year);
-        Console.WriteLine($"day: {day}");
-        foreach (var d in _selectedDates)
+        var day = _selectedDates.FirstOrDefault(d => d.Date.Day == today.Day && d.Date.Month == today.Month && d.Date.Year == today.Year);
+        var newDay = new Day
         {
-            Console.WriteLine(d);
-        }
-        if (_selectedDates.Contains(day))
+            Date = today,
+            isGood = true,
+        };
+
+        if (day != null && _selectedDates.Any() && _selectedDates.Any(d => d.Date == day.Date))
         {
-            await DeleteDay(today);
+            await DeleteDay(newDay);
             didItToday = false;
             _calendarRef.Refresh();
         }
         else
         {
-            await CreateDay(today);
+       
+            await CreateDay(newDay);
             didItToday = true;
             _calendarRef.Refresh();
         }
@@ -110,12 +113,13 @@
             {
                 var json = await response.Content.ReadAsStringAsync();
 
-                _selectedDates = System.Text.Json.JsonSerializer.Deserialize<List<DateOnly>>(json, new System.Text.Json.JsonSerializerOptions
+                var deserialized = System.Text.Json.JsonSerializer.Deserialize<List<Day>>(json, new System.Text.Json.JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
-                }) ?? new List<DateOnly>();
+                });
+                _selectedDates = deserialized != null ? deserialized : new List<Day>();
 
-                if (_selectedDates.Contains(DateOnly.FromDateTime(DateTime.Now)))
+                if (_selectedDates.Any(d => d.Date == DateOnly.FromDateTime(DateTime.Now)))
                 {
                     didItToday = true;
                 }
@@ -140,9 +144,9 @@
         }
     }
 
-    private async Task CreateDay(DateOnly today)
+    private async Task CreateDay(Day day)
     {
-        _selectedDates.Add(today);
+        _selectedDates.Add(day);
         var request = new HttpRequestMessage(HttpMethod.Post, $"/api/Days");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
         var response = await Http.SendAsync(request);
@@ -153,18 +157,18 @@
         }
         else
         {
-            _selectedDates.Remove(today);
+            _selectedDates.Remove(day);
             var respContent = await response.Content.ReadAsStringAsync();
             Console.WriteLine($"BLAD Status: {response.StatusCode}, Content: '{respContent}'");
         }
     }
-    private async Task DeleteDay(DateOnly today)
+    private async Task DeleteDay(Day day)
     {
-        _selectedDates.Remove(today);
+        _selectedDates.Remove(day);
         var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/Days")
         {
             Content = new StringContent(
-                System.Text.Json.JsonSerializer.Serialize(today),
+                System.Text.Json.JsonSerializer.Serialize(day),
                 System.Text.Encoding.UTF8,
                 "application/json")
         };
@@ -177,7 +181,7 @@
         }
         else
         {
-            _selectedDates.Add(today);
+            _selectedDates.Add(day);
             var respContent = await response.Content.ReadAsStringAsync();
             Console.WriteLine($"BLAD Status: {response.StatusCode}, Content: '{respContent}'");
 

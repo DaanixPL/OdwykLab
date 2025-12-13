@@ -1,7 +1,7 @@
 ﻿using App.Application.Commands.Users.UpdateUser;
 using App.Application.Validators.Exceptions;
 using App.Domain.Abstractions;
-using App.Domain.Entities;
+using OdwykLab.Domain.Entities;
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Moq;

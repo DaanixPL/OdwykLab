@@ -4,7 +4,7 @@ using MediatR;
 
 namespace App.Application.Queries.Days.GetDay.ByUserId
 {
-    public record GetDayByUserIdQuery(int userId) : IRequest<List<DateOnly>>, IAuthorizableRequest
+    public record GetDayByUserIdQuery(int userId) : IRequest<List<Day>>, IAuthorizableRequest
     {
         public int? ResourceOwnerId => userId;
         public bool AllowAdminOverride => false;

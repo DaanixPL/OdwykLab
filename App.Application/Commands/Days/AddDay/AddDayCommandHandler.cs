@@ -16,6 +16,7 @@ namespace App.Application.Commands.Days.AddDay
             Day day = new Day
             {
                 UserId = command.UserId,
+                isGood = command.IsGood,
             };
 
             await _unitOfWork.Days.AddDayAsync(day, cancellationToken);

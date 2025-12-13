@@ -1,8 +1,9 @@
 ﻿@using MudBlazor
+@using OdwykLab.Domain.Entities
 
 <MudGrid>
     <MudItem xs="12">
-        <table class="calendar-table">
+        <table class="calendar-table    ">
             <thead>
                 <tr>
                     @foreach (var day in DaysOfWeek)
@@ -17,10 +18,11 @@
                     <tr>
                         @foreach (var day in week)
                         {
-                            <td style="@GetDayStyle(day)">
+                            <td>
                                 @if (day.Month == CurrentDate.Month)
                                 {
-                                    <span>@day.Day</span>
+                                    var dayEntity = SelectedDays.FirstOrDefault(d => d.Date == DateOnly.FromDateTime(day));
+                                    <span style="@GetDayStyle(dayEntity)">@day.Day</span>
                                 }
                             </td>
                         }
@@ -45,15 +47,15 @@
 
 
 <style>
-    .calendar-table { width: 100%; border-collapse: collapse; }
+    .calendar-table { width: 50%; border-collapse: collapse; }
     .calendar-table th, .calendar-table td { padding: 6px; text-align: center; }
-    .calendar-table td span { display: inline-block; width: 32px; height: 32px; line-height: 32px; border-radius: 6px; }
+    .calendar-table td span { display: inline-block; width: 32px; height: 32px; line-height: 1; border-radius: 50%;}
     .calendar-nav { margin-top: 16px; }
 </style>
 
 @code {
     [Parameter]
-    public List<DateOnly> SelectedDays { get; set; } = new();
+    public List<Day> SelectedDays { get; set; } = new();
 
     private DateTime CurrentDate = DateTime.Today;
 
@@ -88,12 +90,11 @@
     {
         StateHasChanged();
     }
-    private string GetDayStyle(DateTime day)
+    private string GetDayStyle(Day day)
     {
-        var dateOnly = DateOnly.FromDateTime(day);
-        if (SelectedDays.Contains(dateOnly) && day.Month == CurrentDate.Month)
+        if (SelectedDays.Contains(day) && day.Date.Month == CurrentDate.Month)
         {
-            return $"background:#FF0000;color:#fff;border-radius:6px;";
+            return day.isGood ? "color: green;" : "color: red;";
         }
         return "";
     }
