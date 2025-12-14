@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.3.11218.70
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App.Application", "App.Application\App.Application.csproj", "{3DBED2CB-DA0A-4B61-B801-08C6E19A7B18}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OdwykLab.Application", "OdwykLab.Application\OdwykLab.Application.csproj", "{3DBED2CB-DA0A-4B61-B801-08C6E19A7B18}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App.Domain", "App.Domain\App.Domain.csproj", "{78BF2F41-6BDF-4B6D-BED2-1913CE296D34}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OdwykLab.Domain", "OdwykLab.Domain\OdwykLab.Domain.csproj", "{78BF2F41-6BDF-4B6D-BED2-1913CE296D34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App.Infrastructure", "App.Infrastructure\App.Infrastructure.csproj", "{D6731196-B7C3-4126-98BD-0168593107FD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OdwykLab.Infrastructure", "OdwykLab.Infrastructure\OdwykLab.Infrastructure.csproj", "{D6731196-B7C3-4126-98BD-0168593107FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App.Api", "App.Api\App.Api.csproj", "{CCB5F4A9-8E0C-4F34-9BE6-365B58A9218C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OdwykLab.Api", "OdwykLab.Api\OdwykLab.Api.csproj", "{CCB5F4A9-8E0C-4F34-9BE6-365B58A9218C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OdwykLab.Frontend", "OdwykLab.Frontend\OdwykLab.Frontend.csproj", "{306305EF-084F-4ABA-A647-519E40A167C3}"
 EndProject
