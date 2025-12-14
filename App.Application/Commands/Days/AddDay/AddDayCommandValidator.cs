@@ -16,6 +16,7 @@ namespace App.Application.Commands.Days.AddDay
             .MustAsync(async (command, date, cancellation) =>
             {
                 var days = await unitOfWork.Days.GetDaysByUserIdAsync(command.UserId, cancellation);
+                Console.WriteLine($"Validating date {date} for user {command.UserId}, existing days count: {days.Count()}");
                 return !days.Any(d => d.Date == date);
             })
             .WithMessage("Day already exists for this user.");

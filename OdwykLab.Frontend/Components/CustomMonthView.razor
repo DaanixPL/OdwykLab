@@ -110,14 +110,15 @@
     private string GetDayStyle(DateOnly day)
     {
         var dayEntity = SelectedDays.FirstOrDefault(d => d.Date == day);
+        string style = "";
         if (selectedDay != null && day == selectedDay)
         {
-            return "background-color: #FFFF0080;";
+            style = "border: 2px; border-style: solid; border-radius: 50%; border-color: aliceblue;";
         }
-        else if (dayEntity != null && SelectedDays.Contains(dayEntity) && dayEntity.Date.Month == CurrentDate.Month)
+        if (dayEntity != null && SelectedDays.Contains(dayEntity) && dayEntity.Date.Month == CurrentDate.Month)
     {
-            return dayEntity.isGood ? "background-color: #008000;" : "background-color: #FF0000;";
+            style += dayEntity.isGood ? "background-color: #008000;" : "background-color: #FF0000;";
         }
-        return "";
+        return style;
     }
 }

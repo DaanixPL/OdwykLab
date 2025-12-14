@@ -5,6 +5,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OdwykLab.Domain.Entities;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace App.Api.Controllers
 {
@@ -25,10 +26,11 @@ namespace App.Api.Controllers
 
         [Authorize]
         [HttpPost] 
-        public async Task<IActionResult> AddDay(bool isGood, DateOnly date)
+        public async Task<IActionResult> AddDay(AddDayCommand command)
         {
             var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var result = await _mediator.Send(new AddDayCommand(userId, isGood, date));
+            var commandWithUser = command with { UserId = userId };
+            var result = await _mediator.Send(commandWithUser);
             return Ok(result);
         }
         [Authorize]
