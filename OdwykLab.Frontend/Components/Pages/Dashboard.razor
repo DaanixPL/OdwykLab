@@ -6,7 +6,7 @@
 
 <div class="full-screen-hero">
     <div class="calender-wrapper">
-        <CustomMonthView @ref="_calendarRef" SelectedDays=" _selectedDates" />
+        <CustomMonthView @ref="_calendarRef" SelectedDays=" _selectedDates" selectedDay="_selectedDay" OnChooseDay="ChooseDay" />
     </div>
 
     <MudGrid>
@@ -27,6 +27,10 @@
     public required IJSRuntime JSRuntime { get; set; }
     [Inject]
     public required NavigationManager NavManager { get; set; }
+    [Inject]
+    public required ISnackbar Snackbar { get; set; }
+
+    DateOnly? _selectedDay = new DateOnly();
 
     private string apiKey = "";
 
@@ -45,27 +49,36 @@
         }
 
         var today = DateOnly.FromDateTime(DateTime.Today);
-        var day = _selectedDates.FirstOrDefault(d => d.Date.Day == today.Day && d.Date.Month == today.Month && d.Date.Year == today.Year);
+        var day = _selectedDates.FirstOrDefault(d => d.Date == today);
         var newDay = new Day
         {
             Date = today,
             isGood = true,
         };
-
-        if (day != null && _selectedDates.Any() && _selectedDates.Any(d => d.Date == day.Date))
+        if (day != null && day.Date == _selectedDay && _selectedDates.Any(d => d.Date == day.Date))
         {
-            await DeleteDay(newDay);
+            await DeleteDay();
             didItToday = false;
             _calendarRef.Refresh();
         }
         else
         {
-       
-            await CreateDay(newDay);
+            await CreateDay(true, _selectedDay);
             didItToday = true;
             _calendarRef.Refresh();
         }
     }
+    private async Task ChooseDay(DateOnly? day)
+    {
+        if (day == null || day > DateOnly.FromDateTime(DateTime.Today))
+        {
+            Snackbar.Add("Oooops, you chose the wrong date", Severity.Error);
+            return;
+        }
+        _selectedDay = day;
+        StateHasChanged();
+    }
+
 
     protected override Task OnInitializedAsync()
     {
@@ -144,11 +157,33 @@
         }
     }
 
-    private async Task CreateDay(Day day)
+    private async Task CreateDay(bool isGood, DateOnly? selectedDay)
     {
+        DateOnly dateOnly;
+        if (!selectedDay.HasValue)
+        {
+            Snackbar.Add("Oooops, you have to choose a date", Severity.Error);
+            return;
+        }
+        else
+        {
+            dateOnly = selectedDay.Value;
+        }
+        var day = new Day
+        {
+            isGood = isGood,
+            Date = dateOnly,
+        };
+        Console.WriteLine($"Creating day: {day.Date}, isGood: {day.isGood}");
         _selectedDates.Add(day);
         var request = new HttpRequestMessage(HttpMethod.Post, $"/api/Days");
         request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", apiKey);
+        request.Content = new StringContent(
+            System.Text.Json.JsonSerializer.Serialize(day),
+            System.Text.Encoding.UTF8,
+            "application/json");
+
+        Console.WriteLine(request.Content);
         var response = await Http.SendAsync(request);
 
         if (response.IsSuccessStatusCode)
@@ -162,13 +197,19 @@
             Console.WriteLine($"BLAD Status: {response.StatusCode}, Content: '{respContent}'");
         }
     }
-    private async Task DeleteDay(Day day)
+    private async Task DeleteDay()
     {
-        _selectedDates.Remove(day);
+        var day = _selectedDates.FirstOrDefault(d => d.Date == _selectedDay);
+        if (day == null)
+        {
+            Snackbar.Add("Oooops, this date isn't exist. Try to reload page", Severity.Error);
+            return;
+        }
+        _selectedDates.RemoveAll(d => d.Id == day.Id);
         var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/Days")
         {
             Content = new StringContent(
-                System.Text.Json.JsonSerializer.Serialize(day),
+                System.Text.Json.JsonSerializer.Serialize(day.Date),
                 System.Text.Encoding.UTF8,
                 "application/json")
         };

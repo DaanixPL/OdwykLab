@@ -1,35 +1,38 @@
-﻿@using MudBlazor
+﻿@rendermode InteractiveServer
+@using MudBlazor
 @using OdwykLab.Domain.Entities
 
 <MudGrid>
     <MudItem xs="12">
-        <table class="calendar-table    ">
-            <thead>
-                <tr>
-                    @foreach (var day in DaysOfWeek)
-                    {
-                        <th>@day</th>
-                    }
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var week in CalendarRows)
-                {
+        <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center">
+              <table class="calendar-table">
+                <thead>
                     <tr>
-                        @foreach (var day in week)
+                        @foreach (var day in DaysOfWeek)
                         {
-                            <td>
-                                @if (day.Month == CurrentDate.Month)
-                                {
-                                    var dayEntity = SelectedDays.FirstOrDefault(d => d.Date == DateOnly.FromDateTime(day));
-                                    <span style="@GetDayStyle(dayEntity)">@day.Day</span>
-                                }
-                            </td>
+                            <th>@day</th>
                         }
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var week in CalendarRows)
+                    {
+                        <tr>
+                            @foreach (var day in week)
+                            {
+                                <td>
+                                    @if (day.Month == CurrentDate.Month)
+                                    {
+                                        <button @onclick="() => OnChooseDay.InvokeAsync(day)" style="@GetDayStyle(day)">@day.Day</button>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </MudStack>
+      
     </MudItem>
     <MudItem xs="12">
         <MudStack AlignItems="AlignItems.Center" Justify="Justify.Center" Class="calendar-nav">
@@ -48,36 +51,50 @@
 
 <style>
     .calendar-table { width: 50%; border-collapse: collapse; }
-    .calendar-table th, .calendar-table td { padding: 6px; text-align: center; }
-    .calendar-table td span { display: inline-block; width: 32px; height: 32px; line-height: 1; border-radius: 50%;}
+    .calendar-table th, .calendar-table td { padding: 6px; text-align: center; vertical-align: middle;}
+
+            .calendar-table td button {
+                display: inline-flex;
+                justify-content: center;
+                align-content: center;
+                width: 8vh;
+                height: 8vh;
+                line-height: 8vh;
+                border-radius: 50%;
+            }
+
     .calendar-nav { margin-top: 16px; }
 </style>
 
 @code {
     [Parameter]
     public List<Day> SelectedDays { get; set; } = new();
+    [Parameter] 
+    public EventCallback<DateOnly?> OnChooseDay { get; set; }
+    [Parameter]
+    public DateOnly? selectedDay { get; set; }
 
-    private DateTime CurrentDate = DateTime.Today;
+    private DateOnly CurrentDate = DateOnly.FromDateTime(DateTime.Today);
 
     private string[] DaysOfWeek = new[] { "Pn", "Wt", "Śr", "Cz", "Pt", "Sb", "Nd" };
 
-    private List<List<DateTime>> CalendarRows => GenerateCalendarRows();
+    private List<List<DateOnly>> CalendarRows => GenerateCalendarRows();
 
     private void PrevMonth() => CurrentDate = CurrentDate.AddMonths(-1);
     private void NextMonth() => CurrentDate = CurrentDate.AddMonths(1);
     private void PrevYear() => CurrentDate = CurrentDate.AddYears(-1);
     private void NextYear() => CurrentDate = CurrentDate.AddYears(1);
 
-    private List<List<DateTime>> GenerateCalendarRows()
+    private List<List<DateOnly>> GenerateCalendarRows()
     {
-        var firstDayOfMonth = new DateTime(CurrentDate.Year, CurrentDate.Month, 1);
+        var firstDayOfMonth = new DateOnly(CurrentDate.Year, CurrentDate.Month, 1);
         int diff = ((int)firstDayOfMonth.DayOfWeek + 6) % 7;
         var startDate = firstDayOfMonth.AddDays(-diff);
 
-        var rows = new List<List<DateTime>>();
+        var rows = new List<List<DateOnly>>();
         for (int week = 0; week < 6; week++)
         {
-            var days = new List<DateTime>();
+            var days = new List<DateOnly>();
             for (int day = 0; day < 7; day++)
             {
                 days.Add(startDate.AddDays(week * 7 + day));
@@ -90,11 +107,16 @@
     {
         StateHasChanged();
     }
-    private string GetDayStyle(Day day)
+    private string GetDayStyle(DateOnly day)
     {
-        if (SelectedDays.Contains(day) && day.Date.Month == CurrentDate.Month)
+        var dayEntity = SelectedDays.FirstOrDefault(d => d.Date == day);
+        if (selectedDay != null && day == selectedDay)
         {
-            return day.isGood ? "color: green;" : "color: red;";
+            return "background-color: #FFFF0080;";
+        }
+        else if (dayEntity != null && SelectedDays.Contains(dayEntity) && dayEntity.Date.Month == CurrentDate.Month)
+    {
+            return dayEntity.isGood ? "background-color: #008000;" : "background-color: #FF0000;";
         }
         return "";
     }

@@ -4,6 +4,7 @@ using App.Application.Queries.Days.GetDay.ByUserId;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using OdwykLab.Domain.Entities;
 
 namespace App.Api.Controllers
 {
@@ -24,10 +25,10 @@ namespace App.Api.Controllers
 
         [Authorize]
         [HttpPost] 
-        public async Task<IActionResult> AddDay([FromBody] bool isGood)
+        public async Task<IActionResult> AddDay(bool isGood, DateOnly date)
         {
             var userId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var result = await _mediator.Send(new AddDayCommand(userId, isGood));
+            var result = await _mediator.Send(new AddDayCommand(userId, isGood, date));
             return Ok(result);
         }
         [Authorize]

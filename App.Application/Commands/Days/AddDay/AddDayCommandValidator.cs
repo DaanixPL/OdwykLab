@@ -8,16 +8,17 @@ namespace App.Application.Commands.Days.AddDay
     {
         public AddDayCommandValidator(IUnitOfWork unitOfWork) 
         {
+
             RuleFor(x => x.UserId)
-                .RequiredField(nameof(AddDayCommand.UserId))
-                .NoAlreadyExistsAsync(
-                async (userId, cancellation) =>
-                {
-                    var day = await unitOfWork.Days.GetDaysByUserIdAsync(userId, cancellation);
-                    return !day.Any(day => day.Date == DateOnly.FromDateTime(DateTime.UtcNow));
-                },
-                "Day"
-                );
+                .RequiredField(nameof(AddDayCommand.UserId));
+
+            RuleFor(x => x.Date)
+            .MustAsync(async (command, date, cancellation) =>
+            {
+                var days = await unitOfWork.Days.GetDaysByUserIdAsync(command.UserId, cancellation);
+                return !days.Any(d => d.Date == date);
+            })
+            .WithMessage("Day already exists for this user.");
         }
     }
 }
